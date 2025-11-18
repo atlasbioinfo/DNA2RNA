@@ -156,16 +156,17 @@ const clearAll = () => {
         <div class="input-section">
           <q-input
             v-model="dna_seq"
-            filled
+            outlined
             type="textarea"
             label="DNA Sequence"
             placeholder="Enter DNA sequence (e.g., ATCGATCG)"
             hint="Supported bases: A, T, C, G, N, U"
             rows="4"
             class="sequence-input"
+            bg-color="white"
           >
             <template v-slot:prepend>
-              <q-icon name="input" color="primary" />
+              <q-icon name="input" color="blue-7" />
             </template>
           </q-input>
         </div>
@@ -180,7 +181,7 @@ const clearAll = () => {
           <q-option-group
             v-model="selectedOperation"
             :options="operations"
-            color="purple"
+            color="blue-7"
             class="operation-options"
           >
             <template v-slot:label="opt">
@@ -198,7 +199,7 @@ const clearAll = () => {
             @click="processSequence"
             label="Submit"
             icon="play_arrow"
-            color="purple"
+            color="blue-7"
             size="lg"
             unelevated
             class="col submit-btn"
@@ -309,7 +310,7 @@ const clearAll = () => {
 }
 
 .bg-gradient-purple {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
 }
 
 .sequence-input {
@@ -320,12 +321,14 @@ const clearAll = () => {
   font-family: 'Courier New', monospace;
   font-size: 16px;
   letter-spacing: 2px;
+  color: #000000;
 }
 
 .operation-section {
-  background: #f5f5f5;
+  background: #f0f7ff;
   padding: 20px;
   border-radius: 8px;
+  border: 1px solid #bfdbfe;
 }
 
 .operation-options :deep(.q-radio) {
@@ -366,7 +369,7 @@ const clearAll = () => {
   background: white;
   padding: 16px;
   border-radius: 6px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #2563eb;
 }
 
 .result-text {
@@ -388,7 +391,7 @@ const clearAll = () => {
   font-family: 'Courier New', monospace;
   font-weight: bold;
   font-size: 18px;
-  color: #667eea;
+  color: #2563eb;
   min-width: 30px;
 }
 
@@ -427,14 +430,14 @@ const clearAll = () => {
   font-size: 16px;
   letter-spacing: 3px;
   font-weight: 600;
-  color: #2c3e50;
-  background: #e8f4fd;
+  color: #1e3a8a;
+  background: #dbeafe;
   padding: 4px 8px;
   border-radius: 4px;
 }
 
 .codon-separator {
-  color: #667eea;
+  color: #2563eb;
   font-weight: bold;
   margin: 0 4px;
   font-size: 18px;
