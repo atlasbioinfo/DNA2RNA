@@ -4,17 +4,38 @@ import { ref } from 'vue'
 
 const q = useQuasar()
 const dna_seq = ref('')
-const selectedOperation = ref('complement')
+const selectedOperation = ref('reverse')
 const result = ref('')
 const showResult = ref(false)
+const aminoAcidSequence = ref('')
+const rnaSequence = ref('')
+const isTranslation = ref(false)
 
 const operations = [
-  { label: 'Complement', value: 'complement', desc: 'DNA complementary strand' },
-  { label: 'Reverse Complement', value: 'reverseComplement', desc: 'Reverse & complement DNA' },
-  { label: 'RNA', value: 'rna', desc: 'Convert DNA to RNA' },
-  { label: 'RNA Complement', value: 'rnaComplement', desc: 'RNA complementary strand' },
-  { label: 'RNA Reverse Complement', value: 'rnaReverseComplement', desc: 'Reverse & complement RNA' }
+  { label: 'Only Reverse Strand', value: 'reverse', desc: 'Reverse the DNA sequence' },
+  { label: 'Reverse Complement', value: 'reverseComplement', desc: 'Reverse and complement DNA' },
+  { label: 'Translation', value: 'translation', desc: 'Translate to amino acid sequence' }
 ]
+
+// Codon table for translation (standard genetic code)
+const codonTable = {
+  'UUU': 'F', 'UUC': 'F', 'UUA': 'L', 'UUG': 'L',
+  'UCU': 'S', 'UCC': 'S', 'UCA': 'S', 'UCG': 'S',
+  'UAU': 'Y', 'UAC': 'Y', 'UAA': '*', 'UAG': '*',
+  'UGU': 'C', 'UGC': 'C', 'UGA': '*', 'UGG': 'W',
+  'CUU': 'L', 'CUC': 'L', 'CUA': 'L', 'CUG': 'L',
+  'CCU': 'P', 'CCC': 'P', 'CCA': 'P', 'CCG': 'P',
+  'CAU': 'H', 'CAC': 'H', 'CAA': 'Q', 'CAG': 'Q',
+  'CGU': 'R', 'CGC': 'R', 'CGA': 'R', 'CGG': 'R',
+  'AUU': 'I', 'AUC': 'I', 'AUA': 'I', 'AUG': 'M',
+  'ACU': 'T', 'ACC': 'T', 'ACA': 'T', 'ACG': 'T',
+  'AAU': 'N', 'AAC': 'N', 'AAA': 'K', 'AAG': 'K',
+  'AGU': 'S', 'AGC': 'S', 'AGA': 'R', 'AGG': 'R',
+  'GUU': 'V', 'GUC': 'V', 'GUA': 'V', 'GUG': 'V',
+  'GCU': 'A', 'GCC': 'A', 'GCA': 'A', 'GCG': 'A',
+  'GAU': 'D', 'GAC': 'D', 'GAA': 'E', 'GAG': 'E',
+  'GGU': 'G', 'GGC': 'G', 'GGA': 'G', 'GGG': 'G'
+}
 
 const processSequence = () => {
   if (!dna_seq.value.trim()) {
@@ -28,37 +49,40 @@ const processSequence = () => {
     return
   }
 
-  const sequence = dna_seq.value.toUpperCase()
+  const sequence = dna_seq.value.toUpperCase().replace(/\s/g, '')
+  isTranslation.value = false
 
   switch (selectedOperation.value) {
-    case 'complement':
-      result.value = sequence.replace(/[ATCGNU]/g, function(match) {
-        return { 'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C', 'N': 'N', 'U': 'A' }[match];
-      })
+    case 'reverse':
+      // Only reverse the sequence
+      result.value = sequence.split('').reverse().join('')
       break
 
     case 'reverseComplement':
+      // Complement then reverse
       const comp = sequence.replace(/[ATCGNU]/g, function(match) {
         return { 'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C', 'N': 'N', 'U': 'A' }[match];
       })
       result.value = comp.split('').reverse().join('')
       break
 
-    case 'rna':
-      result.value = sequence.replace(/T/g, 'U')
-      break
+    case 'translation':
+      // Convert DNA to RNA first
+      const rna = sequence.replace(/T/g, 'U')
+      rnaSequence.value = rna
 
-    case 'rnaComplement':
-      result.value = sequence.replace(/T/g, 'U').replace(/[ATCGNU]/g, function(match) {
-        return { 'A': 'U', 'T': 'A', 'C': 'G', 'G': 'C', 'N': 'N', 'U': 'A' }[match];
-      })
-      break
+      // Split into codons and translate
+      let aminoAcids = []
+      for (let i = 0; i < rna.length; i += 3) {
+        const codon = rna.substr(i, 3)
+        if (codon.length === 3) {
+          const aa = codonTable[codon] || 'X'
+          aminoAcids.push(aa)
+        }
+      }
 
-    case 'rnaReverseComplement':
-      const rnaComp = sequence.replace(/T/g, 'U').replace(/[ATCGNU]/g, function(match) {
-        return { 'A': 'U', 'T': 'A', 'C': 'G', 'G': 'C', 'N': 'N', 'U': 'A' }[match];
-      })
-      result.value = rnaComp.split('').reverse().join('')
+      aminoAcidSequence.value = aminoAcids.join('')
+      isTranslation.value = true
       break
   }
 
@@ -87,11 +111,28 @@ const copyResult = () => {
   }
 }
 
+const copyAminoAcids = () => {
+  if (aminoAcidSequence.value) {
+    copyToClipboard(aminoAcidSequence.value).then(() => {
+      q.notify({
+        message: 'Amino acid sequence copied!',
+        color: 'green-4',
+        icon: 'content_copy',
+        position: 'center',
+        timeout: 1000
+      })
+    })
+  }
+}
+
 const clearAll = () => {
   dna_seq.value = ''
   result.value = ''
   showResult.value = false
-  selectedOperation.value = 'complement'
+  aminoAcidSequence.value = ''
+  rnaSequence.value = ''
+  isTranslation.value = false
+  selectedOperation.value = 'reverse'
 }
 </script>
 
@@ -183,10 +224,57 @@ const clearAll = () => {
               Result
             </div>
 
-            <q-card bordered flat class="result-card">
+            <!-- Translation Result -->
+            <q-card v-if="isTranslation" bordered flat class="result-card translation-card">
+              <q-card-section>
+                <div class="translation-container">
+                  <!-- RNA Sequence with codon separators -->
+                  <div class="rna-row">
+                    <span class="direction-label">5'</span>
+                    <div class="codons-display">
+                      <template v-for="(codon, index) in rnaSequence.match(/.{1,3}/g)" :key="index">
+                        <span class="codon">{{ codon }}</span>
+                        <span v-if="index < rnaSequence.match(/.{1,3}/g).length - 1" class="codon-separator">|</span>
+                      </template>
+                    </div>
+                    <span class="direction-label">3'</span>
+                  </div>
+
+                  <!-- Amino Acid Sequence -->
+                  <div class="amino-acid-row">
+                    <span class="amino-spacer"></span>
+                    <div class="amino-acids-display">
+                      <span v-for="(aa, index) in aminoAcidSequence.split('')" :key="index" class="amino-acid">
+                        {{ aa }}
+                      </span>
+                    </div>
+                    <span class="amino-spacer"></span>
+                  </div>
+                </div>
+              </q-card-section>
+
+              <q-separator />
+
+              <q-card-actions align="right">
+                <q-btn
+                  @click="copyAminoAcids"
+                  label="Copy Amino Acids"
+                  icon="content_copy"
+                  color="primary"
+                  flat
+                />
+              </q-card-actions>
+            </q-card>
+
+            <!-- Regular Result (Reverse / Reverse Complement) -->
+            <q-card v-else bordered flat class="result-card">
               <q-card-section>
                 <div class="result-content">
-                  <div class="result-text">{{ result }}</div>
+                  <div class="result-with-direction">
+                    <span class="direction-label">5'</span>
+                    <span class="result-text">{{ result }}</span>
+                    <span class="direction-label">3'</span>
+                  </div>
                 </div>
               </q-card-section>
 
@@ -288,5 +376,101 @@ const clearAll = () => {
   word-break: break-all;
   line-height: 1.8;
   color: #333;
+}
+
+.result-with-direction {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.direction-label {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 18px;
+  color: #667eea;
+  min-width: 30px;
+}
+
+/* Translation specific styles */
+.translation-card {
+  background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+}
+
+.translation-container {
+  font-family: 'Courier New', monospace;
+  padding: 20px 0;
+}
+
+.rna-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.codons-display {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1;
+  background: white;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #d0d0d0;
+}
+
+.codon {
+  font-size: 16px;
+  letter-spacing: 3px;
+  font-weight: 600;
+  color: #2c3e50;
+  background: #e8f4fd;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.codon-separator {
+  color: #667eea;
+  font-weight: bold;
+  margin: 0 4px;
+  font-size: 18px;
+}
+
+.amino-acid-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.amino-spacer {
+  min-width: 30px;
+}
+
+.amino-acids-display {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+  padding: 12px;
+  background: linear-gradient(to right, #fff5f5, #ffe5e5);
+  border-radius: 6px;
+  border: 2px solid #ffcccb;
+}
+
+.amino-acid {
+  font-size: 18px;
+  font-weight: bold;
+  color: #c7254e;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 40px;
+  text-align: center;
+  border: 2px solid #f9f2f4;
 }
 </style>
