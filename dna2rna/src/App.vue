@@ -1,5 +1,8 @@
 <script setup>
+import { ref } from 'vue'
 import Dna2Rna from './components/dna2rna.vue'
+
+const showInfo = ref(false)
 </script>
 
 <template>
@@ -71,17 +74,6 @@ import Dna2Rna from './components/dna2rna.vue'
 
   </q-layout>
 </template>
-
-<script>
-import { ref } from 'vue'
-
-export default {
-  setup() {
-    const showInfo = ref(false)
-    return { showInfo }
-  }
-}
-</script>
 
 <style>
 .bg-gradient-light {
