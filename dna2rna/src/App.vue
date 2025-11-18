@@ -48,10 +48,22 @@ import Dna2Rna from './components/dna2rna.vue'
 
     <q-footer class="footer-gradient">
       <q-toolbar>
-        <q-toolbar-title class="row justify-center items-center">
-          <div class="text-body1">
-            <q-icon name="science" class="q-mr-sm" />
-            <span class="text-weight-medium">ATLAS BIOINFORMATICS TOOLS</span>
+        <q-toolbar-title>
+          <div class="footer-content">
+            <div class="footer-brand text-body1">
+              <q-icon name="science" class="q-mr-sm" />
+              <span class="text-weight-medium">ATLAS BIOINFORMATICS TOOLS</span>
+            </div>
+            <div class="footer-stats text-caption q-mt-xs">
+              <span id="busuanzi_container_site_pv" style="display:inline-block; margin-right: 20px;">
+                <q-icon name="visibility" size="xs" class="q-mr-xs" />
+                Total Views: <span id="busuanzi_value_site_pv"></span>
+              </span>
+              <span id="busuanzi_container_site_uv">
+                <q-icon name="person" size="xs" class="q-mr-xs" />
+                Visitors: <span id="busuanzi_value_site_uv"></span>
+              </span>
+            </div>
           </div>
         </q-toolbar-title>
       </q-toolbar>
@@ -103,5 +115,32 @@ export default {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.footer-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+.footer-stats span {
+  display: inline-flex;
+  align-items: center;
 }
 </style>
